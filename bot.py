@@ -10,7 +10,19 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-client = discord.Client()
+bot = commands.Bot(command_prefix='!')
+
+
+def appender(filename: str, text: str):
+    """
+    Opens a file with the given filename and appends a line to it.
+
+    Opens a file with the given filename or creates one if it doesn't exist. Appends a line to it.
+    :param filename: the filename to open
+    :param text: the text to append
+    """
+    with open(filename, mode='a+') as file:
+        file.write(f'{text}\n')
 
 
 @bot.event
