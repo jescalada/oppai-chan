@@ -87,6 +87,8 @@ async def on_message(msg):
         await distribute_files(msg)
     elif re.search("!startgame", msg.content) and msg.author.name == "Maxwell":
         await start_game(msg)
+    elif re.search("!stats", msg.content):
+        await check_stats(msg)
 
 
 def log_attachments(msg):
@@ -114,10 +116,10 @@ def save_game():
 
 
 async def game_update(msg):
-    game_stats[msg.author.id]['exp'] += 5 + math.log2(len(msg.content))
+    game_stats[msg.author.id]['exp'] += 5 + math.floor(math.log2(len(msg.content)))
+    save_game()
     if check_level_up(game_stats[msg.author.id]):
         game_stats[msg.author.id]['lvl'] += 1
-        save_game()
         await msg.channel.send(f"Congrats, {msg.author.name}-sama! You just advanced to level {game_stats[msg.author.id]['lvl']}!")
 
 
@@ -125,6 +127,12 @@ def check_level_up(stats: dict) -> bool:
     if stats['lvl'] * stats['lvl'] * 100 <= stats['exp']:
         return True
     return False
+
+
+async def check_stats(msg):
+    stats = game_stats[msg.author.id]
+    response = f"{stats['name']}-sama's stats:\nLevel {stats['lvl']}\tXP: {stats['exp']}/{stats['lvl'] * stats['lvl'] * 100}"
+    await msg.channel.send(response)
 
 
 async def ask_oppai(msg):
