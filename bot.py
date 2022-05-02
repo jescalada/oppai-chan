@@ -2,6 +2,9 @@
 import os
 import re
 
+from io import BytesIO
+
+import discord
 from dotenv import load_dotenv
 import random
 
@@ -10,7 +13,9 @@ from discord.ext import commands
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-bot = commands.Bot(command_prefix='!')
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix='!', intents=intents)
 
 
 def appender(filename: str, text: str):
@@ -69,6 +74,7 @@ async def oppai(msg):
 
 @bot.event
 async def on_message(msg):
+    # If the message has attachments
     if msg.attachments:
         appender('oppai-img.log', f'{msg.author}: {msg.content}')
         for i, attachment in enumerate(msg.attachments):
@@ -92,8 +98,16 @@ async def on_message(msg):
         else:
             response = random.choice(no_responses)
         await msg.channel.send(response)
-    elif re.search("!game", msg.content):
-        response = "Let's play a game, master!"
+    elif re.search("!send", msg.content):
+        with open('img/oppaichan.jpg', mode='rb') as oppai_binary:
+            for member in msg.guild.members:
+                if member.bot:
+                    continue
+                print(f'Sending message to {member.name}...')
+                oppai_binary.seek(0)
+                buffer = BytesIO(oppai_binary.read())
+                await member.send(content="Master Maxwell told me to send you this picture!", file=discord.File(fp=buffer, filename='oppai.jpg'))
+        response = "Sent, master!"
         await msg.channel.send(response)
 
 
