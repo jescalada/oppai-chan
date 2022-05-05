@@ -1,2 +1,4 @@
 .env
 *.log
+game_stats
+trading_game_stats
