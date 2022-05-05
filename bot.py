@@ -99,6 +99,8 @@ async def on_message(msg):
         await check_oppai(msg)
     elif re.search("!shop", msg.content):
         await check_store(msg)
+    elif re.search("!buy ", msg.content):
+        await buy_item(msg)
     # If the message has attachments, logs them
     if msg.attachments:
         log_attachments(msg)
@@ -188,7 +190,29 @@ async def check_store(msg):
     }
     for mini_store in store.values():
         for item in mini_store:
-            response += f'\n{item["name"]}: {item["description"]}\tCost: {item["cost"]} oppai'
+            response += f'\n{item["name"]}: {item["description"]}\tCost: {item["cost"]} oppai\tCommand: {item["buy_command"]}'
+    await msg.channel.send(response)
+
+
+async def buy_item(msg):
+    player = trading_game[msg.author.id]
+    store = {
+        'investment_store': load_investment_store()
+    }
+    response = ""
+    for investment in store['investment_store']:
+        if investment['buy_command'] == msg.content:
+            if player['oppai'] >= investment['cost']:
+                player['oppai'] -= investment['cost']
+                player['investments'].append(investment)
+                response = f"You just bought a {investment['name']}, Master! You have {player['oppai']} oppai left."
+                save_trading_game()
+                break
+            else:
+                response = f"You don't have enough oppai for that, Master! You have {player['oppai']} oppai."
+                break
+    else:
+        response = f"We don't sell any {msg.content.split('!buy ')[1]}, Master!"
     await msg.channel.send(response)
 
 
@@ -197,40 +221,41 @@ def load_investment_store():
         generate_investment("Code Monkey", 'A little rhesus monkey often used for software development purposes.', 50,
                             [generate_item('Awful Code', 20, 1), generate_item('Bad Code', 12, 2), generate_item('Decent Code', 7, 3),
                              generate_item('Good Code', 4, 4), generate_item('Professional Code', 2, 5), generate_item('Godly Code', 1, 6)],
-                            1.1, "None"),
+                            1.1, "None", '!buy monkey'),
         generate_investment("Carrot Farm", 'A monocrop farm that produces nothing but carrots.', 100,
                             [generate_item('Rotten Carrot', 15, 1), generate_item('Limp Carrot', 10, 2), generate_item('Carrot', 5, 3),
                              generate_item('Yummy Carrot', 3, 4), generate_item('Succulent Carrot', 2, 5), generate_item('Golden Carrot', 1, 6)],
-                            1.1, "None"),
+                            1.1, "None", '!buy carrot'),
         generate_investment("Wheat Farm", 'A monocrop farm that produces nothing but wheat.', 200,
                             [generate_item('Bug-eaten Wheat', 40, 1), generate_item('Moldy Wheat', 25, 2), generate_item('Wheat', 15, 3),
                              generate_item('Fresh Wheat', 8, 4), generate_item('Quality Wheat', 5, 5), generate_item('Golden Wheat', 3, 6)],
-                            1.1, "None"),
+                            1.1, "None", '!buy wheat'),
         generate_investment("Apple Farm", 'A monocrop farm that produces nothing but apples.', 350,
                             [generate_item('Rotten Apple', 12, 1), generate_item('Wormy Apple', 8, 2),
                              generate_item('Apple', 6, 3),
                              generate_item('Juicy Apple', 4, 4), generate_item('Delicious Apple', 2, 5),
                              generate_item('Golden Apple', 1, 6)],
-                            1.1, "None"),
+                            1.1, "None", '!buy apple'),
         generate_investment("Meth Lab", "A lab that produces meth. Hey, don't ask me about it.", 1500,
                             [generate_item('Awful Meth', 15, 1), generate_item('Bad Meth', 9, 2),
                              generate_item('Crystal Meth', 7, 3),
                              generate_item('Quality Meth', 4, 4), generate_item('High-quality Meth', 2, 5),
                              generate_item('Godly Meth', 1, 6)],
-                            1.2, "None"),
+                            1.2, "None", '!buy meth'),
         # generate_investment("Slave", 200, {}, 1.05, "None"),
     ]
     return store
 
 
-def generate_investment(name: str, description: str, cost: int, yields: list, growth_rate: float, img: str) -> dict:
+def generate_investment(name: str, description: str, cost: int, yields: list, growth_rate: float, img: str, buy_command: str) -> dict:
     return {
         'name': name,
         'description': description,
         'cost': cost,
         'yields': yields,
         'growth_rate': growth_rate,
-        'img': img
+        'img': img,
+        'buy_command': buy_command
     }
 
 
