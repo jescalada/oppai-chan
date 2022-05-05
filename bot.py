@@ -18,6 +18,7 @@ intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 game_stats = {}
+trading_game = {}
 
 
 def appender(filename: str, text: str):
@@ -36,6 +37,7 @@ def appender(filename: str, text: str):
 async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
     load_game_data()
+    load_trading_game_data()
 
 
 # Loads game data into dictionary
@@ -43,6 +45,13 @@ def load_game_data():
     with open('game_stats', 'rb') as stats_file:
         global game_stats
         game_stats = pickle.load(stats_file)
+
+
+# Loads trading game data into dictionary
+def load_trading_game_data():
+    with open('trading_game_stats', 'rb') as trading_stats_file:
+        global trading_game
+        trading_game = pickle.load(trading_stats_file)
 
 
 @bot.event
@@ -87,6 +96,8 @@ async def on_message(msg):
         await distribute_files(msg)
     elif re.search("!startgame", msg.content) and msg.author.name == "Maxwell":
         await start_game(msg)
+    elif re.search("!starttrading", msg.content) and msg.author.name == "Maxwell":
+        await start_trading_game(msg)
     elif re.search("!stats", msg.content):
         await check_stats(msg)
 
@@ -110,9 +121,32 @@ async def start_game(msg):
         pickle.dump(stats_list, save_file)
 
 
+async def start_trading_game(msg):
+    trading_game = {}
+    for member in msg.guild.members:
+        stats = {
+            "name": member.name,
+            "lvl": 1,
+            "exp": 0,
+            "oppai": 1000,
+            "investments": [],
+            "pets": [],
+            "tokens": [],
+            "achievements": []
+        }
+        trading_game[member.id] = stats
+    with open('trading_game_stats', 'wb') as save_file:
+        pickle.dump(trading_game, save_file)
+
+
 def save_game():
     with open('game_stats', 'wb') as save_file:
         pickle.dump(game_stats, save_file)
+
+
+def save_trading_game():
+    with open('trading_game_stats', 'wb') as save_file:
+        pickle.dump(trading_game, save_file)
 
 
 async def game_update(msg):
