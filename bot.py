@@ -100,6 +100,8 @@ async def on_message(msg):
         await start_trading_game(msg)
     elif re.search("!stats", msg.content):
         await check_stats(msg)
+    elif re.search("!oppai", msg.content):
+        await check_oppai(msg)
 
 
 def log_attachments(msg):
@@ -166,6 +168,12 @@ def check_level_up(stats: dict) -> bool:
 async def check_stats(msg):
     stats = game_stats[msg.author.id]
     response = f"{stats['name']}-sama's stats:\nLevel {stats['lvl']}\tXP: {stats['exp']}/{stats['lvl'] * stats['lvl'] * 100}"
+    await msg.channel.send(response)
+
+
+async def check_oppai(msg):
+    stats = trading_game[msg.author.id]
+    response = f"{stats['name']}-sama, you have {stats['oppai']} oppai!"
     await msg.channel.send(response)
 
 
