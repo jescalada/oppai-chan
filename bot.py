@@ -81,11 +81,6 @@ async def oppai(msg):
 
 @bot.event
 async def on_message(msg):
-    # If the message has attachments, logs them
-    if msg.attachments:
-        log_attachments(msg)
-    # Logs message author and contents
-    appender('oppai.log', f'{msg.author}: {msg.content}')
     await game_update(msg)
     # Uses regex to respond to various commands
     if re.search("^[Oo]ppai(| |-)[Cc]han.*\\?$", msg.content):
@@ -102,6 +97,13 @@ async def on_message(msg):
         await check_stats(msg)
     elif re.search("!oppai", msg.content):
         await check_oppai(msg)
+    elif re.search("!shop", msg.content):
+        await check_store(msg)
+    # If the message has attachments, logs them
+    if msg.attachments:
+        log_attachments(msg)
+    # Logs message author and contents
+    appender('oppai.log', f'{msg.author}: {msg.content}')
 
 
 def log_attachments(msg):
@@ -175,6 +177,38 @@ async def check_oppai(msg):
     stats = trading_game[msg.author.id]
     response = f"{stats['name']}-sama, you have {stats['oppai']} oppai!"
     await msg.channel.send(response)
+
+
+async def check_store(msg):
+    response = "Today we have these items available, Master!"
+    store = {
+        'investment_store': load_investment_store(),
+        'token_store': [],
+        'pet_store': [],
+    }
+    for mini_store in store.values():
+        for item in mini_store:
+            response += f'\n{item["name"]} - {item["cost"]} oppai'
+    await msg.channel.send(response)
+
+
+def load_investment_store():
+    store = [
+        generate_investment("Hire Code Monkey", 50, 2, 1.1, "None"),
+        generate_investment("Build Meth Lab", 100, 5, 1.2, "None"),
+        generate_investment("Buy Slave", 200, 5, 1.05, "None"),
+    ]
+    return store
+
+
+def generate_investment(name: str, cost: int, yield_rate: float, growth_rate: float, img: str):
+    return {
+        'name': name,
+        'cost': cost,
+        'yield': yield_rate,
+        'growth_rate': growth_rate,
+        'img': img
+    }
 
 
 async def ask_oppai(msg):
