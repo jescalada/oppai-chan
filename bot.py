@@ -166,6 +166,55 @@ async def game_update(msg):
         await msg.channel.send(f"Congrats, {msg.author.name}-sama! You just advanced to level {game_stats[msg.author.id]['lvl']}!")
 
 
+async def trading_game_update(msg):
+    for member in msg.guild.members:  # for each member in this guild
+        if member.bot:
+            continue
+        print(f'{member.name} investments: ')
+        player = trading_game[member.id]
+        print(f'{player["investments"]}')
+        for investment in player['investments']:
+            response = ""
+            count = count_dicts(player['investments'], 'name', investment['name'])
+            quality = roll_investment_yield_quality(count)
+            obtained = investment['yields'][quality - 1]
+            response += f"{member.name}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!"
+            await msg.channel.send(response)
+    save_trading_game()
+    await msg.channel.send(f"Updated trading game!")
+
+
+def count_dicts(dict_list: list, param: str, value: str) -> int:
+    count = 0
+    for dictionary in dict_list:
+        if dictionary[param] == value:
+            count += 1
+    return count
+
+
+def roll_investment_yield_quality(count: int):
+    quality1_weight = 1500 - count * 5
+    quality2_weight = 650 - count
+    quality3_weight = 250 - int(count / 10)
+    quality4_weight = int(60 * math.log10(count))
+    quality5_weight = int(30 * math.log10(count * 2))
+    quality6_weight = int(10 * math.log10(count * 3))
+    total = quality1_weight + quality2_weight + quality3_weight + quality4_weight + quality5_weight + quality6_weight
+    num = random.randint(0, total)
+    if num < quality6_weight:
+        return 6
+    elif num < quality5_weight:
+        return 5
+    elif num < quality4_weight:
+        return 4
+    elif num < quality3_weight:
+        return 3
+    elif num < quality2_weight:
+        return 2
+    else:
+        return 1
+
+
 def check_level_up(stats: dict) -> bool:
     if stats['lvl'] * stats['lvl'] * 100 <= stats['exp']:
         return True
