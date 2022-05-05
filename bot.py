@@ -103,6 +103,8 @@ async def on_message(msg):
         await buy_item(msg)
     elif re.search("^!update", msg.content):
         await trading_game_update(msg)
+    elif re.search("^!status", msg.content):
+        await status(msg)
     # If the message has attachments, logs them
     if msg.attachments:
         log_attachments(msg)
@@ -170,18 +172,33 @@ async def trading_game_update(msg):
     for member in msg.guild.members:  # for each member in this guild
         if member.bot:
             continue
-        print(f'{member.name} investments: ')
         player = trading_game[member.id]
-        print(f'{player["investments"]}')
         for investment in player['investments']:
             response = ""
             count = count_dicts(player['investments'], 'name', investment['name'])
             quality = roll_investment_yield_quality(count)
             obtained = investment['yields'][quality - 1]
+            if obtained['item_name'] not in player['items']:
+                player['items'][obtained['item_name']] = obtained['base_yield']
+            else:
+                player['items'][obtained['item_name']] += obtained['base_yield']
             response += f"{member.name}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!"
             await msg.channel.send(response)
     save_trading_game()
     await msg.channel.send(f"Updated trading game!")
+
+
+async def status(msg):
+    player = trading_game[msg.author.id]
+    response = f"= {msg.author.name}'s status =\n"
+    response += f"{player['oppai']} oppai\n"
+    response += f"Investments\n"
+    for investment in player['investments']:
+        response += f"{investment['name']} "
+    response += f"\nItems:\n"
+    for item in player['items']:
+        response += f"{player['items'][item]} {item}\n"
+    await msg.channel.send(response)
 
 
 def count_dicts(dict_list: list, param: str, value: str) -> int:
