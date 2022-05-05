@@ -87,20 +87,22 @@ async def on_message(msg):
         await ask_oppai(msg)
     elif re.search("^おっぱいちゃん.*[?|？]$", msg.content):
         await ask_oppai_japanese(msg)
-    elif re.search("!send", msg.content):
+    elif re.search("^!send", msg.content):
         await distribute_files(msg)
-    elif re.search("!startgame", msg.content) and msg.author.name == "Maxwell":
+    elif re.search("^!startgame", msg.content) and msg.author.name == "Maxwell":
         await start_game(msg)
-    elif re.search("!starttrading", msg.content) and msg.author.name == "Maxwell":
+    elif re.search("^!starttrading", msg.content) and msg.author.name == "Maxwell":
         await start_trading_game(msg)
-    elif re.search("!stats", msg.content):
+    elif re.search("^!stats", msg.content):
         await check_stats(msg)
-    elif re.search("!oppai", msg.content):
+    elif re.search("^!oppai", msg.content):
         await check_oppai(msg)
-    elif re.search("!shop", msg.content):
+    elif re.search("^!shop", msg.content):
         await check_store(msg)
-    elif re.search("!buy ", msg.content):
+    elif re.search("^!buy ", msg.content):
         await buy_item(msg)
+    elif re.search("^!update", msg.content):
+        await trading_game_update(msg)
     # If the message has attachments, logs them
     if msg.attachments:
         log_attachments(msg)
@@ -138,7 +140,8 @@ async def start_trading_game(msg):
             "investments": [],
             "pets": [],
             "tokens": [],
-            "achievements": []
+            "achievements": [],
+            "items": {},
         }
         trading_game[member.id] = stats
     with open('trading_game_stats', 'wb') as save_file:
