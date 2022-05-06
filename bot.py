@@ -8,13 +8,15 @@ import discord
 from dotenv import load_dotenv
 import random
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 intents = discord.Intents.default()
 intents.members = True
+intents.reactions = True
+intents.guilds = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 game_stats = {}
@@ -38,6 +40,7 @@ async def on_ready():
     print(f'{bot.user.name} has connected to Discord!')
     load_game_data()
     load_trading_game_data()
+    trading_game_update.start()
 
 
 # Loads game data into dictionary
@@ -107,11 +110,11 @@ async def on_message(msg):
         await status(msg)
     elif re.search("^!resetall", msg.content) and msg.author.name == "Maxwell":
         await reset_all_trading_stats(msg)
-    # If the message has attachments, logs them
-    if msg.attachments:
-        log_attachments(msg)
-    # Logs message author and contents
-    appender('oppai.log', f'{msg.author}: {msg.content}')
+    # # If the message has attachments, logs them
+    # if msg.attachments:
+    #     log_attachments(msg)
+    # # Logs message author and contents
+    # appender('oppai.log', f'{msg.author}: {msg.content}')
 
 
 def log_attachments(msg):
@@ -171,24 +174,27 @@ async def game_update(msg):
         await msg.channel.send(f"Congrats, {msg.author.name}-sama! You just advanced to level {game_stats[msg.author.id]['lvl']}!")
 
 
-async def trading_game_update(msg):
-    for member in msg.guild.members:  # for each member in this guild
+@tasks.loop(minutes=60)
+async def trading_game_update():
+    channel = bot.get_channel(971979909310328852)
+    for member in channel.members:  # for each member in this guild
         if member.bot:
             continue
         player = trading_game[member.id]
+        response = ""
         for investment in player['investments']:
-            response = ""
-            count = count_dicts(player['investments'], 'name', investment['name'])
+            count = player['investment_counts'][investment['name']]
             quality = roll_investment_yield_quality(count)
             obtained = investment['yields'][quality - 1]
             if obtained['item_name'] not in player['items']:
                 player['items'][obtained['item_name']] = obtained['base_yield']
             else:
                 player['items'][obtained['item_name']] += obtained['base_yield']
-            response += f"{member.name}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!"
-            await msg.channel.send(response)
+            response += f"{member.name}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
+        if response != "":
+            await channel.send(response)
     save_trading_game()
-    await msg.channel.send(f"Updated trading game!")
+    await channel.send(f"Updated trading game!")
 
 
 async def status(msg):
@@ -202,14 +208,6 @@ async def status(msg):
     for item in player['items']:
         response += f"{player['items'][item]} {item}\n"
     await msg.channel.send(response)
-
-
-def count_dicts(dict_list: list, param: str, value: str) -> int:
-    count = 0
-    for dictionary in dict_list:
-        if dictionary[param] == value:
-            count += 1
-    return count
 
 
 def roll_investment_yield_quality(count: int):
