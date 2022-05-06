@@ -102,8 +102,10 @@ async def on_message(msg):
         await check_oppai(msg)
     elif re.search("^!shop", msg.content):
         await check_store(msg)
+    elif re.search("^!buypet", msg.content):
+        await buy_pet(msg)
     elif re.search("^!buy ", msg.content):
-        await buy_item(msg)
+        await buy_investment(msg)
     elif re.search("^!update", msg.content) and msg.author.name == "Maxwell":
         await trading_game_update(msg)
     elif re.search("^!status", msg.content):
@@ -302,6 +304,26 @@ async def buy_investment(msg):
                 break
     else:
         response = f"We don't sell any {msg.content.split('!buy ')[1]}, Master!"
+    await msg.channel.send(response)
+
+
+async def buy_pet(msg):
+    player = trading_game[msg.author.id]
+    pet_name = msg.content.split(" ")[2]
+    for pet in load_pet_store():
+        if pet['buy_command'] == msg.content.replace(pet_name, "").rstrip():
+            if player['oppai'] >= pet['cost']:
+                player['oppai'] -= pet['cost']
+                new_pet = create_pet_instance(pet, pet_name, stats={})
+                player['pets'].append(new_pet)
+                response = f"You just bought a pet {pet['name']} called {pet_name}, Master! You have {player['oppai']} oppai left."
+                save_trading_game()
+                break
+            else:
+                response = f"You don't have enough oppai for that, Master! You have {player['oppai']} oppai."
+                break
+    else:
+        response = f"We don't sell any {msg.content.split(' ')[1]}, Master!"
     await msg.channel.send(response)
 
 
