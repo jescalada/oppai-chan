@@ -104,12 +104,14 @@ async def on_message(msg):
         await check_store(msg)
     elif re.search("^!buy ", msg.content):
         await buy_item(msg)
-    elif re.search("^!update", msg.content):
+    elif re.search("^!update", msg.content) and msg.author.name == "Maxwell":
         await trading_game_update(msg)
     elif re.search("^!status", msg.content):
         await status(msg)
     elif re.search("^!resetall", msg.content) and msg.author.name == "Maxwell":
         await reset_all_trading_stats(msg)
+    elif re.search("^!help", msg.content):
+        await help_prompt(msg)
     # # If the message has attachments, logs them
     # if msg.attachments:
     #     log_attachments(msg)
@@ -356,6 +358,16 @@ def generate_item(name: str, base_yield: int, quality: int) -> dict:
         'base_yield': base_yield,
         'item_quality': quality,
     }
+
+
+async def help_prompt(msg):
+    response = "Commands:\n" \
+               "!shop Shows the shop\n" \
+               "!buy [itemname] Buys an item\n" \
+               "!status Shows current game status\n" \
+               "!oppai Shows oppai balance\n" \
+               "!help Shows this prompt"
+    await msg.channel.send(response)
 
 
 async def ask_oppai(msg):
