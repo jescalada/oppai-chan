@@ -105,6 +105,8 @@ async def on_message(msg):
         await trading_game_update(msg)
     elif re.search("^!status", msg.content):
         await status(msg)
+    elif re.search("^!resetall", msg.content) and msg.author.name == "Maxwell":
+        await reset_all_trading_stats(msg)
     # If the message has attachments, logs them
     if msg.attachments:
         log_attachments(msg)
@@ -140,6 +142,7 @@ async def start_trading_game(msg):
             "exp": 0,
             "oppai": 1000,
             "investments": [],
+            "investment_counts": {},
             "pets": [],
             "tokens": [],
             "achievements": [],
@@ -193,8 +196,8 @@ async def status(msg):
     response = f"= {msg.author.name}'s status =\n"
     response += f"{player['oppai']} oppai\n"
     response += f"Investments\n"
-    for investment in player['investments']:
-        response += f"{investment['name']} "
+    for investment in player['investment_counts'].keys():
+        response += f"{player['investment_counts'][investment]} {investment}s\n"
     response += f"\nItems:\n"
     for item in player['items']:
         response += f"{player['items'][item]} {item}\n"
@@ -230,6 +233,23 @@ def roll_investment_yield_quality(count: int):
         return 2
     else:
         return 1
+
+
+async def reset_all_trading_stats(msg):
+    for member in msg.guild.members:  # for each member in this guild
+        if member.bot:
+            continue
+        player = trading_game[member.id]
+        player['investments'] = []
+        player['investment_counts'] = {}
+        player['items'] = {}
+        player['pets'] = []
+        player["lvl"] = 1
+        player["exp"] = 0
+        player["oppai"] = 1000
+        player["tokens"] = []
+        player["achievements"] = []
+    await msg.channel.send("I just reset the trading stats for everybody, Master!")
 
 
 def check_level_up(stats: dict) -> bool:
@@ -274,6 +294,10 @@ async def buy_item(msg):
             if player['oppai'] >= investment['cost']:
                 player['oppai'] -= investment['cost']
                 player['investments'].append(investment)
+                if investment['name'] not in player['investment_counts']:
+                    player['investment_counts'][investment['name']] = 1
+                else:
+                    player['investment_counts'][investment['name']] += 1
                 response = f"You just bought a {investment['name']}, Master! You have {player['oppai']} oppai left."
                 save_trading_game()
                 break
