@@ -275,7 +275,7 @@ async def check_store(msg):
     store = {
         'investment_store': load_investment_store(),
         'token_store': [],
-        'pet_store': [],
+        'pet_store': load_pet_store(),
     }
     for mini_store in store.values():
         for item in mini_store:
@@ -283,13 +283,9 @@ async def check_store(msg):
     await msg.channel.send(response)
 
 
-async def buy_item(msg):
+async def buy_investment(msg):
     player = trading_game[msg.author.id]
-    store = {
-        'investment_store': load_investment_store()
-    }
-    response = ""
-    for investment in store['investment_store']:
+    for investment in load_investment_store():
         if investment['buy_command'] == msg.content:
             if player['oppai'] >= investment['cost']:
                 player['oppai'] -= investment['cost']
@@ -357,6 +353,55 @@ def generate_item(name: str, base_yield: int, quality: int) -> dict:
         'item_name': name,
         'base_yield': base_yield,
         'item_quality': quality,
+    }
+
+
+def load_pet_store():
+    pet_store = [generate_pet_info(name="Goat",
+                                   description="A baby goat. Looks so cute and innocent!",
+                                   cost=250,
+                                   yields=[generate_item('Pile of Shit', 1, 1), generate_item('Smelly Beard', 1, 2),
+                                           generate_item('Goat Milk', 5, 3), generate_item('Sleek Beard', 3, 4),
+                                           generate_item('Shiny Horn', 2, 5), generate_item('Goat Elixir', 1, 1)],
+                                   base_growth_rate=20,
+                                   quotes=["Baaaaaa!", "Baaaa", "I don't know", "I'll get back to you next week",
+                                           "I'm not sure", "Just copy paste it"],
+                                   img="None",
+                                   buy_command="!buypet goat"),
+                 generate_pet_info(name="Chicken",
+                                   description="A baby chick. So small and cute, makes you want to eat it whole.",
+                                   cost=250,
+                                   yields=[generate_item('Rotten Egg', 10, 1), generate_item('Leathery Chicken', 5, 2),
+                                           generate_item('Egg', 5, 3), generate_item('Juicy Chicken', 3, 4),
+                                           generate_item('Delicious Egg', 2, 5), generate_item('Heavenly Chicken', 1, 1)],
+                                   base_growth_rate=40,
+                                   quotes=["Cluck", "Cluck cluck", "CLUCK"],
+                                   img="None",
+                                   buy_command="!buypet chicken")]
+    return pet_store
+
+
+def generate_pet_info(name: str, description: str, cost: int, yields: list, base_growth_rate: float, quotes: list, img: str, buy_command: str) -> dict:
+    return {
+        'name': name,
+        'description': description,
+        'cost': cost,
+        'yields': yields,
+        'base_growth_rate': base_growth_rate,
+        'quotes': quotes,
+        'img': img,
+        'buy_command': buy_command
+    }
+
+
+def create_pet_instance(pet_info: dict, name: str, stats: dict):
+    return {
+        'pet_info': pet_info,
+        'name': name,
+        'hunger': 0,
+        'happiness': 50,
+        'growth_stage': 1,
+        'stats': stats
     }
 
 
