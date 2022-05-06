@@ -195,6 +195,14 @@ async def trading_game_update():
             else:
                 player['items'][obtained['item_name']] += obtained['base_yield']
             response += f"{member.name}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
+        for pet in player['pets']:
+            quality = roll_investment_yield_quality(1)
+            obtained = pet['pet_info']['yields'][quality - 1]
+            if obtained['item_name'] not in player['items']:
+                player['items'][obtained['item_name']] = obtained['base_yield']
+            else:
+                player['items'][obtained['item_name']] += obtained['base_yield']
+            response += f"{member.name}'s {pet['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
         if response != "":
             await channel.send(response)
     save_trading_game()
