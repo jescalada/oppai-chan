@@ -107,7 +107,7 @@ async def on_message(msg):
     elif re.search("^!buy ", msg.content):
         await buy_investment(msg)
     elif re.search("^!update", msg.content) and msg.author.name == "Maxwell":
-        await trading_game_update(msg)
+        await trading_game_update()
     elif re.search("^!status", msg.content):
         await status(msg)
     elif re.search("^!resetall", msg.content) and msg.author.name == "Maxwell":
@@ -116,6 +116,8 @@ async def on_message(msg):
         await help_prompt(msg)
     elif re.search("^!petstatus", msg.content):
         await pets_status(msg)
+    elif re.search("^!feed", msg.content):
+        await feed_pet(msg)
 
 
 # # If the message has attachments, logs them
@@ -158,6 +160,7 @@ async def start_trading_game(msg):
             "tokens": [],
             "achievements": [],
             "items": {},
+            "item_info": {},
         }
         trading_game[member.id] = stats
     with open('trading_game_stats', 'wb') as save_file:
@@ -195,6 +198,7 @@ async def trading_game_update():
             quality = roll_investment_yield_quality(count)
             obtained = investment['yields'][quality - 1]
             if obtained['item_name'] not in player['items']:
+                player['item_info'][obtained['item_name']] = obtained
                 player['items'][obtained['item_name']] = obtained['base_yield']
             else:
                 player['items'][obtained['item_name']] += obtained['base_yield']
@@ -203,6 +207,7 @@ async def trading_game_update():
             quality = roll_investment_yield_quality(1)
             obtained = pet['pet_info']['yields'][quality - 1]
             if obtained['item_name'] not in player['items']:
+                player['item_info'][obtained['item_name']] = obtained
                 player['items'][obtained['item_name']] = obtained['base_yield']
             else:
                 player['items'][obtained['item_name']] += obtained['base_yield']
@@ -235,6 +240,40 @@ async def pets_status(msg):
                     f"Mood: {'Suicidal' if pet['happiness'] < 15 else 'Depressed' if pet['happiness'] < 30 else 'Sad' if pet['happiness'] < 45 else 'Normal' if pet['happiness'] < 60 else 'Pleased' if pet['happiness'] < 75 else 'Happy' if pet['happiness'] < 90 else 'Blissful'} - " \
                     f"Growth: {'Baby' if pet['growth_stage'] == 0 else 'Child' if pet['growth_stage'] else 'Adult'} [{pet['growth_percent']}%]\n"
     await msg.channel.send(response)
+
+
+async def feed_pet(msg):
+    response = ""
+    player = trading_game[msg.author.id]
+    command = msg.content.split(" ")
+    pet_name = command[1]
+    pet = get_pet_by_name(pet_name, player)
+    if not pet:
+        response += f"You don't have a pet called {pet_name}, Master!"
+        await msg.channel.send(response)
+        return
+    item_name = msg.content.replace("!feed ", "").replace(pet_name, "").strip()
+    if check_item_in_inventory(item_name, 1, player):
+        player['items'][item_name] -= 1
+        quality = player['item_info'][item_name]['item_quality']
+        pet['hunger'] = min(pet['hunger'] + quality * quality, 100)
+        response += f"You feed {pet_name} a {item_name}.\n"
+        response += f"{pet_name}'s fullness increased by {quality * quality}.\n"  # todo add function to check hunger/mood/growth instead of if statements
+        response += f'{pet_name} says: "{random.choice(pet["pet_info"]["quotes"])}"'
+    else:
+        response += f"You don't have any {item_name}s, Master!"
+    await msg.channel.send(response)
+
+
+def get_pet_by_name(pet_name, player) -> dict:
+    for pet in player['pets']:
+        if pet['name'] == pet_name:
+            return pet
+    return {}
+
+
+def check_item_in_inventory(item_name: str, quantity: int, player: dict) -> bool:
+    return item_name in player['items'] and player['items'][item_name] >= quantity
 
 
 def roll_investment_yield_quality(count: int):
@@ -274,6 +313,7 @@ async def reset_all_trading_stats(msg):
         player["oppai"] = 1000
         player["tokens"] = []
         player["achievements"] = []
+        player["item_info"] = {}
     await msg.channel.send("I just reset the trading stats for everybody, Master!")
 
 
