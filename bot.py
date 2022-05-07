@@ -206,18 +206,42 @@ async def trading_game_update():
                 player['items'][obtained['item_name']] += obtained['base_yield']
             response += f"{member.name}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
         for pet in player['pets']:
-            quality = roll_investment_yield_quality(1)
-            obtained = pet['pet_info']['yields'][quality - 1]
-            if obtained['item_name'] not in player['items']:
-                player['item_info'][obtained['item_name']] = obtained
-                player['items'][obtained['item_name']] = obtained['base_yield']
-            else:
-                player['items'][obtained['item_name']] += obtained['base_yield']
-            response += f"{member.name}'s {pet['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
+            response += pet_production(pet, player)
+            pet_status_update(pet)
+            if pet['growth_percent'] == 100:
+                response += f"Congrats! {pet['name']} grew up!\n"
+                pet['growth_stage'] += 1
+                pet['growth_percent'] = 0
+            response += f'{pet["name"]} is {pet_hunger_text(pet)} and {pet_mood_text(pet)}.\n'
         if response != "":
             await channel.send(response)
     save_trading_game()
     await channel.send(f"Updated trading game!")
+
+
+def pet_production(pet, player):
+    quality = roll_investment_yield_quality(1)
+    obtained = pet['pet_info']['yields'][quality - 1]
+    if obtained['item_name'] not in player['items']:
+        player['item_info'][obtained['item_name']] = obtained
+        player['items'][obtained['item_name']] = obtained['base_yield']
+    else:
+        player['items'][obtained['item_name']] += obtained['base_yield']
+    return f"{player['name']}'s {pet['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
+
+
+def pet_status_update(pet):
+    pet['hunger'] = max(0, pet['hunger'] - 10)
+    pet['happiness'] = max(0, pet['happiness'] - 5)
+    pet['growth_percent'] = min(100, pet['pet_info']['base_growth_rate'] + pet['growth_percent'])
+
+
+def pet_hunger_text(pet):
+    return f"{'Starving' if pet['hunger'] < 15 else 'Very Hungry' if pet['hunger'] < 30 else 'Hungry' if pet['hunger'] < 45 else 'Not Hungry' if pet['hunger'] < 60 else 'Satisfied' if pet['hunger'] < 75 else 'Full' if pet['hunger'] < 90 else 'Bloated'}"
+
+
+def pet_mood_text(pet):
+    return f"{'Suicidal' if pet['happiness'] < 15 else 'Depressed' if pet['happiness'] < 30 else 'Sad' if pet['happiness'] < 45 else 'Okay' if pet['happiness'] < 60 else 'Pleased' if pet['happiness'] < 75 else 'Happy' if pet['happiness'] < 90 else 'Blissful'}"
 
 
 async def status(msg):
@@ -238,8 +262,8 @@ async def pets_status(msg):
     response = f"= {msg.author.name}'s pets =\n"
     for pet in player['pets']:
         response += f"{pet['name']} the {pet['pet_info']['name']} - " \
-                    f"Hunger: {'Starving' if pet['hunger'] < 25 else 'Hungry' if pet['hunger'] < 50 else 'Satisfied' if pet['hunger'] < 75 else 'Full'} - " \
-                    f"Mood: {'Suicidal' if pet['happiness'] < 15 else 'Depressed' if pet['happiness'] < 30 else 'Sad' if pet['happiness'] < 45 else 'Normal' if pet['happiness'] < 60 else 'Pleased' if pet['happiness'] < 75 else 'Happy' if pet['happiness'] < 90 else 'Blissful'} - " \
+                    f"Hunger: {pet_hunger_text(pet)} - " \
+                    f"Mood: {pet_mood_text(pet)} - " \
                     f"Growth: {'Baby' if pet['growth_stage'] == 0 else 'Child' if pet['growth_stage'] else 'Adult'} [{pet['growth_percent']}%]\n"
     await msg.channel.send(response)
 
@@ -473,7 +497,7 @@ def load_pet_store():
                                    yields=[generate_item('Pile of Shit', 1, 1, 0), generate_item('Smelly Beard', 1, 2, 1),
                                            generate_item('Goat Milk', 5, 3, 3), generate_item('Sleek Beard', 3, 4, 6),
                                            generate_item('Shiny Horn', 2, 5, 11), generate_item('Goat Elixir', 1, 1, 30)],
-                                   base_growth_rate=20,
+                                   base_growth_rate=1,
                                    quotes=["Baaaaaa!", "Baaaa", "I don't know", "I'll get back to you next week",
                                            "I'm not sure", "Just copy paste it"],
                                    img="None",
@@ -484,7 +508,7 @@ def load_pet_store():
                                    yields=[generate_item('Rotten Egg', 10, 1, 0), generate_item('Leathery Chicken', 5, 2, 0),
                                            generate_item('Egg', 5, 3, 3), generate_item('Juicy Chicken', 3, 4, 6),
                                            generate_item('Delicious Egg', 2, 5, 11), generate_item('Heavenly Chicken', 1, 1, 30)],
-                                   base_growth_rate=40,
+                                   base_growth_rate=2,
                                    quotes=["Cluck", "Cluck cluck", "CLUCK", "*stares*", "*flaps wings*"],
                                    img="None",
                                    buy_command="!buypet chicken")]
