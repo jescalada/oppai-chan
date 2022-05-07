@@ -494,10 +494,13 @@ def create_pet_instance(pet_info: dict, name: str, stats: dict):
 
 async def help_prompt(msg):
     response = "Commands:\n" \
-               "!shop Shows the shop\n" \
-               "!buy [itemname] Buys an item\n" \
-               "!status Shows current game status\n" \
-               "!oppai Shows oppai balance\n" \
+               "!shop\tShows the shop\n" \
+               "!buy [item name]\tBuys an item\n" \
+               "!status\tShows current game status\n" \
+               "!oppai\tShows oppai balance\n" \
+               "!buypet [pet type] [pet name]\tBuys a pet\n" \
+               "!petstatus\tShows all your pets and their status\n" \
+               "!feed [pet name] [item name]\tFeeds an item to a pet\n" \
                "!help Shows this prompt"
     await msg.channel.send(response)
 
