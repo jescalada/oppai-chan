@@ -393,28 +393,28 @@ async def buy_pet(msg):
 def load_investment_store():
     store = [
         generate_investment("Code Monkey", 'A little rhesus monkey often used for software development purposes.', 50,
-                            [generate_item('Awful Code', 20, 1), generate_item('Bad Code', 12, 2), generate_item('Decent Code', 7, 3),
-                             generate_item('Good Code', 4, 4), generate_item('Professional Code', 2, 5), generate_item('Godly Code', 1, 6)],
+                            [generate_item('Awful Code', 20, 1, 0), generate_item('Bad Code', 12, 2, 0), generate_item('Decent Code', 7, 3, 1),
+                             generate_item('Good Code', 4, 4, 2), generate_item('Professional Code', 2, 5, 3), generate_item('Godly Code', 1, 6, 5)],
                             1.1, "None", '!buy monkey'),
         generate_investment("Carrot Farm", 'A monocrop farm that produces nothing but carrots.', 100,
-                            [generate_item('Rotten Carrot', 15, 1), generate_item('Limp Carrot', 10, 2), generate_item('Carrot', 5, 3),
-                             generate_item('Yummy Carrot', 3, 4), generate_item('Succulent Carrot', 2, 5), generate_item('Golden Carrot', 1, 6)],
+                            [generate_item('Rotten Carrot', 15, 1, 0), generate_item('Limp Carrot', 10, 2, 0), generate_item('Carrot', 5, 3, 1),
+                             generate_item('Yummy Carrot', 3, 4, 2), generate_item('Succulent Carrot', 2, 5, 5), generate_item('Golden Carrot', 1, 6, 15)],
                             1.1, "None", '!buy carrot'),
         generate_investment("Wheat Farm", 'A monocrop farm that produces nothing but wheat.', 200,
-                            [generate_item('Bug-eaten Wheat', 40, 1), generate_item('Moldy Wheat', 25, 2), generate_item('Wheat', 15, 3),
-                             generate_item('Fresh Wheat', 8, 4), generate_item('Quality Wheat', 5, 5), generate_item('Golden Wheat', 3, 6)],
+                            [generate_item('Bug-eaten Wheat', 40, 1, 0), generate_item('Moldy Wheat', 25, 2, 0), generate_item('Wheat', 15, 3, 1),
+                             generate_item('Fresh Wheat', 8, 4, 2), generate_item('Quality Wheat', 5, 5, 4), generate_item('Golden Wheat', 3, 6, 8)],
                             1.1, "None", '!buy wheat'),
         generate_investment("Apple Farm", 'A monocrop farm that produces nothing but apples.', 350,
-                            [generate_item('Rotten Apple', 12, 1), generate_item('Wormy Apple', 8, 2),
-                             generate_item('Apple', 6, 3),
-                             generate_item('Juicy Apple', 4, 4), generate_item('Delicious Apple', 2, 5),
-                             generate_item('Golden Apple', 1, 6)],
+                            [generate_item('Rotten Apple', 12, 1, 0), generate_item('Wormy Apple', 8, 2, 0),
+                             generate_item('Apple', 6, 3, 2),
+                             generate_item('Juicy Apple', 4, 4, 4), generate_item('Delicious Apple', 2, 5, 10),
+                             generate_item('Golden Apple', 1, 6, 25)],
                             1.1, "None", '!buy apple'),
         generate_investment("Meth Lab", "A lab that produces meth. Hey, don't ask me about it.", 1500,
-                            [generate_item('Awful Meth', 15, 1), generate_item('Bad Meth', 9, 2),
-                             generate_item('Crystal Meth', 7, 3),
-                             generate_item('Quality Meth', 4, 4), generate_item('High-quality Meth', 2, 5),
-                             generate_item('Godly Meth', 1, 6)],
+                            [generate_item('Awful Meth', 15, 1, 0), generate_item('Bad Meth', 9, 2, 1),
+                             generate_item('Crystal Meth', 7, 3, 2),
+                             generate_item('Quality Meth', 4, 4, 5), generate_item('High-quality Meth', 2, 5, 15),
+                             generate_item('Godly Meth', 1, 6, 40)],
                             1.2, "None", '!buy meth'),
         # generate_investment("Slave", 200, {}, 1.05, "None"),
     ]
@@ -433,11 +433,12 @@ def generate_investment(name: str, description: str, cost: int, yields: list, gr
     }
 
 
-def generate_item(name: str, base_yield: int, quality: int) -> dict:
+def generate_item(name: str, base_yield: int, quality: int, base_value: int) -> dict:
     return {
         'item_name': name,
         'base_yield': base_yield,
         'item_quality': quality,
+        'base_value': base_value
     }
 
 
@@ -445,9 +446,9 @@ def load_pet_store():
     pet_store = [generate_pet_info(name="Goat",
                                    description="A baby goat. Looks so cute and innocent!",
                                    cost=250,
-                                   yields=[generate_item('Pile of Shit', 1, 1), generate_item('Smelly Beard', 1, 2),
-                                           generate_item('Goat Milk', 5, 3), generate_item('Sleek Beard', 3, 4),
-                                           generate_item('Shiny Horn', 2, 5), generate_item('Goat Elixir', 1, 1)],
+                                   yields=[generate_item('Pile of Shit', 1, 1, 0), generate_item('Smelly Beard', 1, 2, 1),
+                                           generate_item('Goat Milk', 5, 3, 3), generate_item('Sleek Beard', 3, 4, 6),
+                                           generate_item('Shiny Horn', 2, 5, 11), generate_item('Goat Elixir', 1, 1, 30)],
                                    base_growth_rate=20,
                                    quotes=["Baaaaaa!", "Baaaa", "I don't know", "I'll get back to you next week",
                                            "I'm not sure", "Just copy paste it"],
@@ -456,9 +457,9 @@ def load_pet_store():
                  generate_pet_info(name="Chicken",
                                    description="A baby chick. So small and cute, makes you want to eat it whole.",
                                    cost=250,
-                                   yields=[generate_item('Rotten Egg', 10, 1), generate_item('Leathery Chicken', 5, 2),
-                                           generate_item('Egg', 5, 3), generate_item('Juicy Chicken', 3, 4),
-                                           generate_item('Delicious Egg', 2, 5), generate_item('Heavenly Chicken', 1, 1)],
+                                   yields=[generate_item('Rotten Egg', 10, 1, 0), generate_item('Leathery Chicken', 5, 2, 0),
+                                           generate_item('Egg', 5, 3, 3), generate_item('Juicy Chicken', 3, 4, 6),
+                                           generate_item('Delicious Egg', 2, 5, 11), generate_item('Heavenly Chicken', 1, 1, 30)],
                                    base_growth_rate=40,
                                    quotes=["Cluck", "Cluck cluck", "CLUCK"],
                                    img="None",
