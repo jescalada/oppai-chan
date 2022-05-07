@@ -90,8 +90,8 @@ async def on_message(msg):
         await ask_oppai(msg)
     elif re.search("^おっぱいちゃん.*[?|？]$", msg.content):
         await ask_oppai_japanese(msg)
-    elif re.search("^!send", msg.content):
-        await distribute_files(msg)
+    # elif re.search("^!send", msg.content):
+    #     await distribute_files(msg)
     elif re.search("^!startgame", msg.content) and msg.author.name == "Maxwell":
         await start_game(msg)
     elif re.search("^!starttrading", msg.content) and msg.author.name == "Maxwell":
@@ -114,7 +114,11 @@ async def on_message(msg):
         await reset_all_trading_stats(msg)
     elif re.search("^!help", msg.content):
         await help_prompt(msg)
-    # # If the message has attachments, logs them
+    elif re.search("^!petstatus", msg.content):
+        await pets_status(msg)
+
+
+# # If the message has attachments, logs them
     # if msg.attachments:
     #     log_attachments(msg)
     # # Logs message author and contents
@@ -219,6 +223,17 @@ async def status(msg):
     response += f"\nItems:\n"
     for item in player['items']:
         response += f"{player['items'][item]} {item}\n"
+    await msg.channel.send(response)
+
+
+async def pets_status(msg):
+    player = trading_game[msg.author.id]
+    response = f"= {msg.author.name}'s pets =\n"
+    for pet in player['pets']:
+        response += f"{pet['name']} the {pet['pet_info']['name']} - " \
+                    f"Hunger: {'Starving' if pet['hunger'] < 25 else 'Hungry' if pet['hunger'] < 50 else 'Satisfied' if pet['hunger'] < 75 else 'Full'} - " \
+                    f"Mood: {'Suicidal' if pet['happiness'] < 15 else 'Depressed' if pet['happiness'] < 30 else 'Sad' if pet['happiness'] < 45 else 'Normal' if pet['happiness'] < 60 else 'Pleased' if pet['happiness'] < 75 else 'Happy' if pet['happiness'] < 90 else 'Blissful'} - " \
+                    f"Growth: {'Baby' if pet['growth_stage'] == 0 else 'Child' if pet['growth_stage'] else 'Adult'} [{pet['growth_percent']}%]\n"
     await msg.channel.send(response)
 
 
@@ -431,6 +446,7 @@ def create_pet_instance(pet_info: dict, name: str, stats: dict):
         'hunger': 0,
         'happiness': 50,
         'growth_stage': 1,
+        'growth_percent': 0,
         'stats': stats
     }
 
