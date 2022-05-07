@@ -118,6 +118,8 @@ async def on_message(msg):
         await pets_status(msg)
     elif re.search("^!feed", msg.content):
         await feed_pet(msg)
+    elif re.search("^!sell", msg.content):
+        await sell_item(msg)
 
 
 # # If the message has attachments, logs them
@@ -227,7 +229,7 @@ async def status(msg):
         response += f"{player['investment_counts'][investment]} {investment}s\n"
     response += f"\nItems:\n"
     for item in player['items']:
-        response += f"{player['items'][item]} {item}\n"
+        response += f"{player['items'][item]} {item} - Value: {player['item_info'][item]['base_value']}\n"
     await msg.channel.send(response)
 
 
@@ -390,6 +392,28 @@ async def buy_pet(msg):
     await msg.channel.send(response)
 
 
+async def sell_item(msg):
+    response = ""
+    player = trading_game[msg.author.id]
+    try:
+        quantity = int(msg.content.split(" ")[1])
+    except ValueError:
+        response += f"{msg.content.split(' ')[1]} is not a number, Master!"
+        await msg.channel.send(response)
+        return
+    item_name = msg.content.replace("!sell ", "").replace(str(quantity), "").strip()
+    if item_name not in player['items']:
+        response += f"You don't have any {item_name} to sell, Master!"
+    elif player['items'][item_name] < quantity:
+        response += f"You only have {player['items'][item_name]} {item_name}s to sell, Master!"
+    else:
+        player['items'][item_name] -= quantity
+        sale_value = player['item_info'][item_name]['base_value'] * quantity
+        player['oppai'] += sale_value
+        response += f"Sold {quantity} {item_name}s for {sale_value} oppai, Master!\nYou now have {player['oppai']} oppai."
+    await msg.channel.send(response)
+
+
 def load_investment_store():
     store = [
         generate_investment("Code Monkey", 'A little rhesus monkey often used for software development purposes.', 50,
@@ -461,7 +485,7 @@ def load_pet_store():
                                            generate_item('Egg', 5, 3, 3), generate_item('Juicy Chicken', 3, 4, 6),
                                            generate_item('Delicious Egg', 2, 5, 11), generate_item('Heavenly Chicken', 1, 1, 30)],
                                    base_growth_rate=40,
-                                   quotes=["Cluck", "Cluck cluck", "CLUCK"],
+                                   quotes=["Cluck", "Cluck cluck", "CLUCK", "*stares*", "*flaps wings*"],
                                    img="None",
                                    buy_command="!buypet chicken")]
     return pet_store
