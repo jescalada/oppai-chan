@@ -198,22 +198,11 @@ async def trading_game_update():
         player = trading_game[member.id]
         response = ""
         for investment in player['investments']:
-            count = player['investment_counts'][investment['name']]
-            quality = roll_investment_yield_quality(count)
-            obtained = investment['yields'][quality - 1]
-            if obtained['item_name'] not in player['items']:
-                player['item_info'][obtained['item_name']] = obtained
-                player['items'][obtained['item_name']] = obtained['base_yield']
-            else:
-                player['items'][obtained['item_name']] += obtained['base_yield']
-            response += f"{member.name}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
+            response += investment_production(investment, player)
         for pet in player['pets']:
             response += pet_production(pet, player)
             pet_status_update(pet)
-            if pet['growth_percent'] == 100:
-                response += f"Congrats! {pet['name']} grew up!\n"
-                pet['growth_stage'] += 1
-                pet['growth_percent'] = 0
+            response += check_pet_growth_achieved(pet)
             response += f'{pet["name"]} is {pet_hunger_text(pet)} and {pet_mood_text(pet)}.\n'
         if response != "":
             await channel.send(response)
@@ -221,16 +210,28 @@ async def trading_game_update():
     await channel.send(f"Updated trading game!")
 
 
+def investment_production(investment, player):
+    count = player['investment_counts'][investment['name']]
+    quality = roll_investment_yield_quality(count)
+    obtained = investment['yields'][quality - 1]
+    add_item_to_player(obtained, player)
+    return f"{player['name']}'s {investment['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
+
+
 def pet_production(pet, player):
     growth_factor = pet['growth_percent'] + (pet['growth_stage'] - 1) * 200
     quality = roll_investment_yield_quality(growth_factor)
     obtained = pet['pet_info']['yields'][quality - 1]
+    add_item_to_player(obtained, player)
+    return f"{player['name']}'s {pet['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
+
+
+def add_item_to_player(obtained, player):
     if obtained['item_name'] not in player['items']:
         player['item_info'][obtained['item_name']] = obtained
         player['items'][obtained['item_name']] = obtained['base_yield']
     else:
         player['items'][obtained['item_name']] += obtained['base_yield']
-    return f"{player['name']}'s {pet['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
 
 
 def pet_status_update(pet):
@@ -240,6 +241,14 @@ def pet_status_update(pet):
         pet['growth_percent'] = min(100, pet['pet_info']['base_growth_rate'] + pet['growth_percent'])
         if pet['happiness'] > 75:
             pet['growth_percent'] = min(100, pet['pet_info']['base_growth_rate'] + pet['growth_percent'])
+
+
+def check_pet_growth_achieved(pet):
+    if pet['growth_percent'] == 100:
+        pet['growth_stage'] += 1
+        pet['growth_percent'] = 0
+        return f"Congrats! {pet['name']} grew up!\n"
+    return ""
 
 
 def pet_hunger_text(pet):
@@ -290,7 +299,7 @@ async def feed_pet(msg):
         quality = player['item_info'][item_name]['item_quality']
         pet['hunger'] = min(pet['hunger'] + quality * quality, 100)
         response += f"You feed {pet_name} a {item_name}.\n"
-        response += f"{pet_name}'s fullness increased by {quality * quality}.\n"  # todo add function to check hunger/mood/growth instead of if statements
+        response += f"{pet_name}'s fullness increased by {quality * quality}.\n"
         if any(element in item_name for element in pet['pet_info']['favorite']):
             pet['happiness'] = min(100, pet['happiness'] + quality * quality)
             response += f"{pet_name} loves {item_name}!\n"
