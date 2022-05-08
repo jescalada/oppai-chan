@@ -124,6 +124,8 @@ async def on_message(msg):
         await play_with_pet(msg)
     elif re.search("^!recipes", msg.content):
         await check_recipes(msg)
+    elif re.search("^!cook", msg.content):
+        await cook_item(msg)
 
 
 # # If the message has attachments, logs them
@@ -639,6 +641,73 @@ async def check_recipes(msg):
     await msg.channel.send(response)
 
 
+async def cook_item(msg):
+    response = ""
+    player = trading_game[msg.author.id]
+    args = msg.content.split(" ")
+    recipe_name = args[1]
+    recipe_info = get_recipe(recipe_name)
+    if not recipe_info:
+        response = f"You can't make a {recipe_name}, Master!"
+    quantities = []
+    ingredient_names = []
+    for i in range(2, len(args), 2):
+        try:
+            quantities.append(int(args[i]))
+        except ValueError:
+            response += f"{args[i]} is not a number, Master!"
+            await msg.channel.send(response)
+            return
+    for i in range(3, len(args), 2):
+        item_name = args[i].replace("-", " ")
+        quantity = quantities[(i - 3) // 2]
+        if item_name not in player['items']:
+            response += f"You don't have any {item_name}, Master!"
+            await msg.channel.send(response)
+            return
+        elif player['items'][item_name] < quantity:
+            response += f"You only have {player['items'][item_name]} {item_name}s to sell, Master!"
+            await msg.channel.send(response)
+            return
+        else:
+            ingredient_names.append(item_name)
+    ingredients = list(zip(quantities, ingredient_names))
+    if len(ingredients) != len(recipe_info['ingredients']):
+        response += f"Wrong number of ingredients, Master!"
+        await msg.channel.send(response)
+        return
+    for i, (quantity, ingredient) in enumerate(ingredients):
+        ingredient_type, quantity_required = recipe_info['ingredients'][i]
+        if ingredient_type not in ingredient:
+            response += f"{ingredient} isn't in the recipe, Master!"
+            await msg.channel.send(response)
+            return
+        elif quantity_required != quantity:
+            response += f"Wrong amount of {ingredient_type}, Master!"
+            await msg.channel.send(response)
+            return
+    quality_sum = 0
+    quantity_sum = 0
+    for quantity, ingredient in ingredients:
+        player['items'][ingredient] -= quantity
+        quality_sum += player['item_info'][ingredient]['item_quality'] * quantity
+        quantity_sum += quantity
+    average_quality = quality_sum // quantity_sum
+    obtained = recipe_info['outcomes'][average_quality - 1]
+    add_item_to_player(obtained, player)
+    response += f"Successfully cooked {obtained['base_yield']} {obtained['item_name']}s, Master!\n"
+    await msg.channel.send(response)
+    save_trading_game()
+
+
+def get_recipe(recipe_name: str) -> dict:
+    recipes = load_recipes()
+    for recipe in recipes:
+        if recipe['outcome_name'] == recipe_name:
+            return recipe
+    return {}
+
+
 def load_recipes():
     recipes = [
         generate_recipe(ingredients=[("Wheat", 5)],
@@ -657,7 +726,7 @@ def load_recipes():
                         outcomes=[generate_item('Rancid Cheese', 1, 1, 1),
                                   generate_item('Stinky Cheese', 1, 2, 6),
                                   generate_item('Cheese', 1, 3, 11), generate_item('Yummy Cheese', 1, 4, 22),
-                                  generate_item('Delicious Cheese', 2, 5, 50),
+                                  generate_item('Delicious Cheese', 1, 5, 50),
                                   generate_item('Heavenly Cheese', 1, 1, 125)],
                         outcome_name="Cheese",
                         cook_command="!make Cheese")
