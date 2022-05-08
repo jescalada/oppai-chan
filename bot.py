@@ -122,13 +122,15 @@ async def on_message(msg):
         await sell_item(msg)
     elif re.search("^!play", msg.content):
         await play_with_pet(msg)
+    elif re.search("^!recipes", msg.content):
+        await check_recipes(msg)
 
 
 # # If the message has attachments, logs them
-    # if msg.attachments:
-    #     log_attachments(msg)
-    # # Logs message author and contents
-    # appender('oppai.log', f'{msg.author}: {msg.content}')
+# if msg.attachments:
+#     log_attachments(msg)
+# # Logs message author and contents
+# appender('oppai.log', f'{msg.author}: {msg.content}')
 
 
 def log_attachments(msg):
@@ -186,7 +188,8 @@ async def game_update(msg):
     save_game()
     if check_level_up(game_stats[msg.author.id]):
         game_stats[msg.author.id]['lvl'] += 1
-        await msg.channel.send(f"Congrats, {msg.author.name}-sama! You just advanced to level {game_stats[msg.author.id]['lvl']}!")
+        await msg.channel.send(
+            f"Congrats, {msg.author.name}-sama! You just advanced to level {game_stats[msg.author.id]['lvl']}!")
 
 
 @tasks.loop(minutes=60)
@@ -480,16 +483,22 @@ async def sell_item(msg):
 def load_investment_store():
     store = [
         generate_investment("Code Monkey", 'A little rhesus monkey often used for software development purposes.', 50,
-                            [generate_item('Awful Code', 20, 1, 0), generate_item('Bad Code', 12, 2, 0), generate_item('Decent Code', 7, 3, 1),
-                             generate_item('Good Code', 4, 4, 2), generate_item('Professional Code', 2, 5, 3), generate_item('Godly Code', 1, 6, 5)],
+                            [generate_item('Awful Code', 20, 1, 0), generate_item('Bad Code', 12, 2, 0),
+                             generate_item('Decent Code', 7, 3, 1),
+                             generate_item('Good Code', 4, 4, 2), generate_item('Professional Code', 2, 5, 3),
+                             generate_item('Godly Code', 1, 6, 5)],
                             1.1, "None", '!buy monkey'),
         generate_investment("Carrot Farm", 'A monocrop farm that produces nothing but carrots.', 100,
-                            [generate_item('Rotten Carrot', 15, 1, 0), generate_item('Limp Carrot', 10, 2, 0), generate_item('Carrot', 5, 3, 1),
-                             generate_item('Yummy Carrot', 3, 4, 2), generate_item('Succulent Carrot', 2, 5, 5), generate_item('Golden Carrot', 1, 6, 15)],
+                            [generate_item('Rotten Carrot', 15, 1, 0), generate_item('Limp Carrot', 10, 2, 0),
+                             generate_item('Carrot', 5, 3, 1),
+                             generate_item('Yummy Carrot', 3, 4, 2), generate_item('Succulent Carrot', 2, 5, 5),
+                             generate_item('Golden Carrot', 1, 6, 15)],
                             1.1, "None", '!buy carrot'),
         generate_investment("Wheat Farm", 'A monocrop farm that produces nothing but wheat.', 200,
-                            [generate_item('Bug-eaten Wheat', 40, 1, 0), generate_item('Moldy Wheat', 25, 2, 0), generate_item('Wheat', 15, 3, 1),
-                             generate_item('Fresh Wheat', 8, 4, 2), generate_item('Quality Wheat', 5, 5, 4), generate_item('Golden Wheat', 3, 6, 8)],
+                            [generate_item('Bug-eaten Wheat', 40, 1, 0), generate_item('Moldy Wheat', 25, 2, 0),
+                             generate_item('Wheat', 15, 3, 1),
+                             generate_item('Fresh Wheat', 8, 4, 2), generate_item('Quality Wheat', 5, 5, 4),
+                             generate_item('Golden Wheat', 3, 6, 8)],
                             1.1, "None", '!buy wheat'),
         generate_investment("Apple Farm", 'A monocrop farm that produces nothing but apples.', 350,
                             [generate_item('Rotten Apple', 12, 1, 0), generate_item('Wormy Apple', 8, 2, 0),
@@ -508,7 +517,8 @@ def load_investment_store():
     return store
 
 
-def generate_investment(name: str, description: str, cost: int, yields: list, growth_rate: float, img: str, buy_command: str) -> dict:
+def generate_investment(name: str, description: str, cost: int, yields: list, growth_rate: float, img: str,
+                        buy_command: str) -> dict:
     return {
         'name': name,
         'description': description,
@@ -533,9 +543,11 @@ def load_pet_store():
     pet_store = [generate_pet_info(name="Goat",
                                    description="A baby goat. Looks so cute and innocent!",
                                    cost=200,
-                                   yields=[generate_item('Pile of Shit', 1, 1, 0), generate_item('Smelly Beard', 1, 2, 1),
+                                   yields=[generate_item('Pile of Shit', 1, 1, 0),
+                                           generate_item('Smelly Beard', 1, 2, 1),
                                            generate_item('Goat Milk', 5, 3, 3), generate_item('Sleek Beard', 3, 4, 6),
-                                           generate_item('Shiny Horn', 2, 5, 11), generate_item('Goat Elixir', 1, 1, 30)],
+                                           generate_item('Shiny Horn', 2, 5, 11),
+                                           generate_item('Goat Elixir', 1, 1, 30)],
                                    base_growth_rate=1,
                                    quotes=["Baaaaaa!", "Baaaa", "I don't know", "I'll get back to you next week",
                                            "I'm not sure", "Just copy paste it"],
@@ -545,9 +557,11 @@ def load_pet_store():
                  generate_pet_info(name="Chicken",
                                    description="A baby chick. So small and cute, makes you want to eat it whole.",
                                    cost=200,
-                                   yields=[generate_item('Rotten Egg', 10, 1, 0), generate_item('Leathery Chicken', 5, 2, 0),
+                                   yields=[generate_item('Rotten Egg', 10, 1, 0),
+                                           generate_item('Leathery Chicken', 5, 2, 0),
                                            generate_item('Egg', 5, 3, 2), generate_item('Juicy Chicken', 3, 4, 4),
-                                           generate_item('Delicious Egg', 2, 5, 8), generate_item('Heavenly Chicken', 1, 1, 22)],
+                                           generate_item('Delicious Egg', 2, 5, 8),
+                                           generate_item('Heavenly Chicken', 1, 1, 22)],
                                    base_growth_rate=2,
                                    quotes=["Cluck", "Cluck cluck", "CLUCK", "*stares*", "*flaps wings*"],
                                    favorite=["Wheat", "Worm"],
@@ -556,11 +570,14 @@ def load_pet_store():
                  generate_pet_info(name="Unicorn",
                                    description="A little unicorn. A legendary creature that apparently shits sugar and rainbows.",
                                    cost=300,
-                                   yields=[generate_item('Gooey Sugar', 8, 1, 0), generate_item('Pale Rainbow', 5, 2, 1),
+                                   yields=[generate_item('Gooey Sugar', 8, 1, 0),
+                                           generate_item('Pale Rainbow', 5, 2, 1),
                                            generate_item('Sugar', 4, 3, 3), generate_item('Colorful Rainbow', 3, 4, 5),
-                                           generate_item('Savory Sugar', 2, 5, 10), generate_item('Unicorn Horn', 1, 1, 100)],
+                                           generate_item('Savory Sugar', 2, 5, 10),
+                                           generate_item('Unicorn Horn', 1, 1, 100)],
                                    base_growth_rate=0.5,
-                                   quotes=["Neigh", "SUNSHINE LOLLIPOPS AND RAINBOWS", "*prances around*", "*barfs a rainbow*",
+                                   quotes=["Neigh", "SUNSHINE LOLLIPOPS AND RAINBOWS", "*prances around*",
+                                           "*barfs a rainbow*",
                                            "*unintelligible unicorn noises*", "UGH I WANNA KILL A VAMPIRE RIGHT NOW",
                                            "Pst... kid, got any apples?"],
                                    favorite=["Apple", "Magic"],
@@ -573,7 +590,7 @@ def load_pet_store():
                                            generate_item('Old Milk', 7, 2, 2),
                                            generate_item('Milk', 5, 3, 4), generate_item('Creamy Milk', 4, 4, 8),
                                            generate_item('Delicious Milk', 2, 5, 18),
-                                           generate_item('Heavenly Milk', 1, 1, 50)],
+                                           generate_item('Heavenly Milk', 1, 6, 50)],
                                    base_growth_rate=1,
                                    quotes=["Do you want milkies?", "*boing*", "*bouncy*", "Boing boing!",
                                            "You can touch them if you want...", "Do you want to... touch them?",
@@ -585,7 +602,8 @@ def load_pet_store():
     return pet_store
 
 
-def generate_pet_info(name: str, description: str, cost: int, yields: list, base_growth_rate: float, quotes: list, favorite: list, img: str, buy_command: str) -> dict:
+def generate_pet_info(name: str, description: str, cost: int, yields: list, base_growth_rate: float, quotes: list,
+                      favorite: list, img: str, buy_command: str) -> dict:
     return {
         'name': name,
         'description': description,
@@ -611,30 +629,48 @@ def create_pet_instance(pet_info: dict, name: str, stats: dict):
     }
 
 
+async def check_recipes(msg):
+    response = "These are the available recipes, Master!"
+    for recipe in load_recipes():
+        response += f'\n{recipe["outcome_name"]}: '
+        for ingredient, quantity in recipe['ingredients']:
+            response += f'{quantity} {ingredient}\t'
+        response += f'Command: {recipe["cook_command"]}'
+    await msg.channel.send(response)
+
+
 def load_recipes():
     recipes = [
         generate_recipe(ingredients=[("Wheat", 5)],
                         outcomes=[generate_item("Gross Flour", 1, 1, 0), generate_item("Strange Flour", 1, 2, 1),
                                   generate_item("Flour", 1, 3, 7), generate_item('Fresh Flour', 1, 4, 15),
-                                  generate_item('Quality Flour', 1, 5, 30), generate_item('Heavenly Flour', 1, 6, 60)]),
+                                  generate_item('Quality Flour', 1, 5, 30), generate_item('Heavenly Flour', 1, 6, 60)],
+                        outcome_name="Flour",
+                        cook_command="!make Flour"),
         generate_recipe(ingredients=[("Beard", 5)],
                         outcomes=[generate_item("Disgusting Sweater", 1, 1, 1), generate_item("Hairy Sweater", 1, 2, 3),
                                   generate_item("Sweater", 1, 3, 10), generate_item('Cozy Sweater', 1, 4, 22),
-                                  generate_item('Silky Sweater', 1, 5, 45), generate_item('Godly Sweater', 1, 6, 80)]),
+                                  generate_item('Silky Sweater', 1, 5, 45), generate_item('Godly Sweater', 1, 6, 80)],
+                        outcome_name="Sweater",
+                        cook_command="!make Sweater"),
         generate_recipe(ingredients=[("Milk", 2)],
                         outcomes=[generate_item('Rancid Cheese', 1, 1, 1),
-                                           generate_item('Stinky Cheese', 1, 2, 6),
-                                           generate_item('Cheese', 1, 3, 11), generate_item('Yummy Cheese', 1, 4, 22),
-                                           generate_item('Delicious Cheese', 2, 5, 50),
-                                           generate_item('Heavenly Cheese', 1, 1, 125)])
+                                  generate_item('Stinky Cheese', 1, 2, 6),
+                                  generate_item('Cheese', 1, 3, 11), generate_item('Yummy Cheese', 1, 4, 22),
+                                  generate_item('Delicious Cheese', 2, 5, 50),
+                                  generate_item('Heavenly Cheese', 1, 1, 125)],
+                        outcome_name="Cheese",
+                        cook_command="!make Cheese")
     ]
     return recipes
 
 
-def generate_recipe(ingredients: list, outcomes: list):
+def generate_recipe(ingredients: list, outcomes: list, outcome_name: str, cook_command: str):
     return {
         'ingredients': ingredients,
-        'outcomes': outcomes
+        'outcomes': outcomes,
+        'outcome_name': outcome_name,
+        'cook_command': cook_command
     }
 
 
