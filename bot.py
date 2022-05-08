@@ -222,7 +222,8 @@ async def trading_game_update():
 
 
 def pet_production(pet, player):
-    quality = roll_investment_yield_quality(1)
+    growth_factor = pet['growth_percent'] + (pet['growth_stage'] - 1) * 200
+    quality = roll_investment_yield_quality(growth_factor)
     obtained = pet['pet_info']['yields'][quality - 1]
     if obtained['item_name'] not in player['items']:
         player['item_info'][obtained['item_name']] = obtained
@@ -332,9 +333,9 @@ def roll_investment_yield_quality(count: int):
     quality1_weight = 1500 - count * 5
     quality2_weight = 650 - count
     quality3_weight = 250 - int(count / 10)
-    quality4_weight = int(60 * math.log10(count))
-    quality5_weight = int(30 * math.log10(count * 2))
-    quality6_weight = int(10 * math.log10(count * 3))
+    quality4_weight = int(60 * max(1.0, math.log10(count)))
+    quality5_weight = int(30 * max(1.0, 1.5 * math.log10(count)))
+    quality6_weight = int(10 * max(1.0, 2 * math.log10(count)))
     total = quality1_weight + quality2_weight + quality3_weight + quality4_weight + quality5_weight + quality6_weight
     num = random.randint(0, total)
     if num < quality6_weight:
