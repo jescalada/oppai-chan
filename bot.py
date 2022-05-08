@@ -235,7 +235,10 @@ def pet_production(pet, player):
 def pet_status_update(pet):
     pet['hunger'] = max(0, pet['hunger'] - 10)
     pet['happiness'] = max(0, pet['happiness'] - 5)
-    pet['growth_percent'] = min(100, pet['pet_info']['base_growth_rate'] + pet['growth_percent'])
+    if pet['hunger'] > 25 and pet['happiness'] > 25:
+        pet['growth_percent'] = min(100, pet['pet_info']['base_growth_rate'] + pet['growth_percent'])
+        if pet['happiness'] > 75:
+            pet['growth_percent'] = min(100, pet['pet_info']['base_growth_rate'] + pet['growth_percent'])
 
 
 def pet_hunger_text(pet):
@@ -291,6 +294,7 @@ async def feed_pet(msg):
     else:
         response += f"You don't have any {item_name}s, Master!"
     await msg.channel.send(response)
+    save_trading_game()
 
 
 async def play_with_pet(msg):
@@ -306,6 +310,7 @@ async def play_with_pet(msg):
     pet['happiness'] = min(100, pet['happiness'] + 10)
     response += f"You play with {pet_name}.\n{pet_name}'s happiness increased by 10.\n{pet_name} feels {pet_mood_text(pet)}."
     await msg.channel.send(response)
+    save_trading_game()
 
 
 def get_pet_by_name(pet_name, player) -> dict:
@@ -411,6 +416,7 @@ async def buy_investment(msg):
     else:
         response = f"We don't sell any {msg.content.split('!buy ')[1]}, Master!"
     await msg.channel.send(response)
+    save_trading_game()
 
 
 async def buy_pet(msg):
@@ -431,6 +437,7 @@ async def buy_pet(msg):
     else:
         response = f"We don't sell any {msg.content.split(' ')[1]}, Master!"
     await msg.channel.send(response)
+    save_trading_game()
 
 
 async def sell_item(msg):
@@ -453,6 +460,7 @@ async def sell_item(msg):
         player['oppai'] += sale_value
         response += f"Sold {quantity} {item_name}s for {sale_value} Ø, Master!\nYou now have {player['oppai']} Ø."
     await msg.channel.send(response)
+    save_trading_game()
 
 
 def load_investment_store():
