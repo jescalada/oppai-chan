@@ -120,6 +120,8 @@ async def on_message(msg):
         await feed_pet(msg)
     elif re.search("^!sell", msg.content):
         await sell_item(msg)
+    elif re.search("^!play", msg.content):
+        await play_with_pet(msg)
 
 
 # # If the message has attachments, logs them
@@ -247,13 +249,13 @@ def pet_mood_text(pet):
 async def status(msg):
     player = trading_game[msg.author.id]
     response = f"= {msg.author.name}'s status =\n"
-    response += f"{player['oppai']} oppai\n"
+    response += f"{player['oppai']} Ø\n"
     response += f"Investments\n"
     for investment in player['investment_counts'].keys():
         response += f"{player['investment_counts'][investment]} {investment}s\n"
     response += f"\nItems:\n"
     for item in player['items']:
-        response += f"{player['items'][item]} {item} - Value: {player['item_info'][item]['base_value']}\n"
+        response += f"{player['items'][item]} {item} - Value: {player['item_info'][item]['base_value']} Ø\n"
     await msg.channel.send(response)
 
 
@@ -288,6 +290,21 @@ async def feed_pet(msg):
         response += f'{pet_name} says: "{random.choice(pet["pet_info"]["quotes"])}"'
     else:
         response += f"You don't have any {item_name}s, Master!"
+    await msg.channel.send(response)
+
+
+async def play_with_pet(msg):
+    response = ""
+    player = trading_game[msg.author.id]
+    command = msg.content.split(" ")
+    pet_name = command[1]
+    pet = get_pet_by_name(pet_name, player)
+    if not pet:
+        response += f"You don't have a pet called {pet_name}, Master!"
+        await msg.channel.send(response)
+        return
+    pet['happiness'] = min(100, pet['happiness'] + 10)
+    response += f"You play with {pet_name}.\n{pet_name}'s happiness increased by 10.\n{pet_name} feels {pet_mood_text(pet)}."
     await msg.channel.send(response)
 
 
@@ -357,7 +374,7 @@ async def check_stats(msg):
 
 async def check_oppai(msg):
     stats = trading_game[msg.author.id]
-    response = f"{stats['name']}-sama, you have {stats['oppai']} oppai!"
+    response = f"{stats['name']}-sama, you have {stats['oppai']} Ø!"
     await msg.channel.send(response)
 
 
@@ -370,7 +387,7 @@ async def check_store(msg):
     }
     for mini_store in store.values():
         for item in mini_store:
-            response += f'\n{item["name"]}: {item["description"]}\tCost: {item["cost"]} oppai\tCommand: {item["buy_command"]}'
+            response += f'\n{item["name"]}: {item["description"]}\tCost: {item["cost"]} Ø\tCommand: {item["buy_command"]}'
     await msg.channel.send(response)
 
 
@@ -385,11 +402,11 @@ async def buy_investment(msg):
                     player['investment_counts'][investment['name']] = 1
                 else:
                     player['investment_counts'][investment['name']] += 1
-                response = f"You just bought a {investment['name']}, Master! You have {player['oppai']} oppai left."
+                response = f"You just bought a {investment['name']}, Master! You have {player['oppai']} Ø left."
                 save_trading_game()
                 break
             else:
-                response = f"You don't have enough oppai for that, Master! You have {player['oppai']} oppai."
+                response = f"You don't have enough oppai for that, Master! You have {player['oppai']} Ø."
                 break
     else:
         response = f"We don't sell any {msg.content.split('!buy ')[1]}, Master!"
@@ -405,11 +422,11 @@ async def buy_pet(msg):
                 player['oppai'] -= pet['cost']
                 new_pet = create_pet_instance(pet, pet_name, stats={})
                 player['pets'].append(new_pet)
-                response = f"You just bought a pet {pet['name']} called {pet_name}, Master! You have {player['oppai']} oppai left."
+                response = f"You just bought a pet {pet['name']} called {pet_name}, Master! You have {player['oppai']} Ø left."
                 save_trading_game()
                 break
             else:
-                response = f"You don't have enough oppai for that, Master! You have {player['oppai']} oppai."
+                response = f"You don't have enough oppai for that, Master! You have {player['oppai']} Ø."
                 break
     else:
         response = f"We don't sell any {msg.content.split(' ')[1]}, Master!"
@@ -434,7 +451,7 @@ async def sell_item(msg):
         player['items'][item_name] -= quantity
         sale_value = player['item_info'][item_name]['base_value'] * quantity
         player['oppai'] += sale_value
-        response += f"Sold {quantity} {item_name}s for {sale_value} oppai, Master!\nYou now have {player['oppai']} oppai."
+        response += f"Sold {quantity} {item_name}s for {sale_value} Ø, Master!\nYou now have {player['oppai']} Ø."
     await msg.channel.send(response)
 
 
