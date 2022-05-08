@@ -220,7 +220,7 @@ def investment_production(investment, player):
 
 def pet_production(pet, player):
     growth_factor = pet['growth_percent'] + (pet['growth_stage'] - 1) * 200
-    quality = roll_investment_yield_quality(growth_factor)
+    quality = roll_investment_yield_quality(growth_factor + 1)
     obtained = pet['pet_info']['yields'][quality - 1]
     add_item_to_player(obtained, player)
     return f"{player['name']}'s {pet['name']} produced {obtained['base_yield']} {obtained['item_name']}!\n"
@@ -532,7 +532,7 @@ def generate_item(name: str, base_yield: int, quality: int, base_value: int) -> 
 def load_pet_store():
     pet_store = [generate_pet_info(name="Goat",
                                    description="A baby goat. Looks so cute and innocent!",
-                                   cost=250,
+                                   cost=200,
                                    yields=[generate_item('Pile of Shit', 1, 1, 0), generate_item('Smelly Beard', 1, 2, 1),
                                            generate_item('Goat Milk', 5, 3, 3), generate_item('Sleek Beard', 3, 4, 6),
                                            generate_item('Shiny Horn', 2, 5, 11), generate_item('Goat Elixir', 1, 1, 30)],
@@ -544,15 +544,44 @@ def load_pet_store():
                                    buy_command="!buypet goat"),
                  generate_pet_info(name="Chicken",
                                    description="A baby chick. So small and cute, makes you want to eat it whole.",
-                                   cost=250,
+                                   cost=200,
                                    yields=[generate_item('Rotten Egg', 10, 1, 0), generate_item('Leathery Chicken', 5, 2, 0),
-                                           generate_item('Egg', 5, 3, 3), generate_item('Juicy Chicken', 3, 4, 6),
-                                           generate_item('Delicious Egg', 2, 5, 11), generate_item('Heavenly Chicken', 1, 1, 30)],
+                                           generate_item('Egg', 5, 3, 2), generate_item('Juicy Chicken', 3, 4, 4),
+                                           generate_item('Delicious Egg', 2, 5, 8), generate_item('Heavenly Chicken', 1, 1, 22)],
                                    base_growth_rate=2,
                                    quotes=["Cluck", "Cluck cluck", "CLUCK", "*stares*", "*flaps wings*"],
                                    favorite=["Wheat", "Worm"],
                                    img="None",
-                                   buy_command="!buypet chicken")]
+                                   buy_command="!buypet chicken"),
+                 generate_pet_info(name="Unicorn",
+                                   description="A little unicorn. A legendary creature that apparently shits sugar and rainbows.",
+                                   cost=300,
+                                   yields=[generate_item('Gooey Sugar', 8, 1, 0), generate_item('Pale Rainbow', 5, 2, 1),
+                                           generate_item('Sugar', 4, 3, 3), generate_item('Colorful Rainbow', 3, 4, 5),
+                                           generate_item('Savory Sugar', 2, 5, 10), generate_item('Unicorn Horn', 1, 1, 100)],
+                                   base_growth_rate=0.5,
+                                   quotes=["Neigh", "SUNSHINE LOLLIPOPS AND RAINBOWS", "*prances around*", "*barfs a rainbow*",
+                                           "*unintelligible unicorn noises*", "UGH I WANNA KILL A VAMPIRE RIGHT NOW",
+                                           "Pst... kid, got any apples?"],
+                                   favorite=["Apple", "Magic"],
+                                   img="None",
+                                   buy_command="!buypet unicorn"),
+                 generate_pet_info(name="Cowgirl",
+                                   description="A cow girl. She has huge tits and probably has enough milk to feed a family of four.",
+                                   cost=500,
+                                   yields=[generate_item('Rancid Milk', 10, 1, 0),
+                                           generate_item('Old Milk', 7, 2, 2),
+                                           generate_item('Milk', 5, 3, 4), generate_item('Creamy Milk', 4, 4, 8),
+                                           generate_item('Delicious Milk', 2, 5, 18),
+                                           generate_item('Heavenly Milk', 1, 1, 50)],
+                                   base_growth_rate=1,
+                                   quotes=["Do you want milkies?", "*boing*", "*bouncy*", "Boing boing!",
+                                           "You can touch them if you want...", "Do you want to... touch them?",
+                                           "My back hurts...", "My chest hurts...", "I can give you some... milk",
+                                           "Got milk?"],
+                                   favorite=["Eggplant", "Banana"],
+                                   img="None",
+                                   buy_command="!buypet cowgirl")]
     return pet_store
 
 
