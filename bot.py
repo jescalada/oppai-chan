@@ -611,6 +611,33 @@ def create_pet_instance(pet_info: dict, name: str, stats: dict):
     }
 
 
+def load_recipes():
+    recipes = [
+        generate_recipe(ingredients=[("Wheat", 5)],
+                        outcomes=[generate_item("Gross Flour", 1, 1, 0), generate_item("Strange Flour", 1, 2, 1),
+                                  generate_item("Flour", 1, 3, 7), generate_item('Fresh Flour', 1, 4, 15),
+                                  generate_item('Quality Flour', 1, 5, 30), generate_item('Heavenly Flour', 1, 6, 60)]),
+        generate_recipe(ingredients=[("Beard", 5)],
+                        outcomes=[generate_item("Disgusting Sweater", 1, 1, 1), generate_item("Hairy Sweater", 1, 2, 3),
+                                  generate_item("Sweater", 1, 3, 10), generate_item('Cozy Sweater', 1, 4, 22),
+                                  generate_item('Silky Sweater', 1, 5, 45), generate_item('Godly Sweater', 1, 6, 80)]),
+        generate_recipe(ingredients=[("Milk", 2)],
+                        outcomes=[generate_item('Rancid Cheese', 1, 1, 1),
+                                           generate_item('Stinky Cheese', 1, 2, 6),
+                                           generate_item('Cheese', 1, 3, 11), generate_item('Yummy Cheese', 1, 4, 22),
+                                           generate_item('Delicious Cheese', 2, 5, 50),
+                                           generate_item('Heavenly Cheese', 1, 1, 125)])
+    ]
+    return recipes
+
+
+def generate_recipe(ingredients: list, outcomes: list):
+    return {
+        'ingredients': ingredients,
+        'outcomes': outcomes
+    }
+
+
 async def help_prompt(msg):
     response = "Commands:\n" \
                "!shop\tShows the shop\n" \
