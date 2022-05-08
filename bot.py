@@ -290,6 +290,10 @@ async def feed_pet(msg):
         pet['hunger'] = min(pet['hunger'] + quality * quality, 100)
         response += f"You feed {pet_name} a {item_name}.\n"
         response += f"{pet_name}'s fullness increased by {quality * quality}.\n"  # todo add function to check hunger/mood/growth instead of if statements
+        if any(element in item_name for element in pet['pet_info']['favorite']):
+            pet['happiness'] = min(100, pet['happiness'] + quality * quality)
+            response += f"{pet_name} loves {item_name}!\n"
+            response += f"{pet_name}'s happiness increased by {quality * quality}.\n"
         response += f'{pet_name} says: "{random.choice(pet["pet_info"]["quotes"])}"'
     else:
         response += f"You don't have any {item_name}s, Master!"
@@ -525,6 +529,7 @@ def load_pet_store():
                                    base_growth_rate=1,
                                    quotes=["Baaaaaa!", "Baaaa", "I don't know", "I'll get back to you next week",
                                            "I'm not sure", "Just copy paste it"],
+                                   favorite=["Carrot", "Code"],
                                    img="None",
                                    buy_command="!buypet goat"),
                  generate_pet_info(name="Chicken",
@@ -535,12 +540,13 @@ def load_pet_store():
                                            generate_item('Delicious Egg', 2, 5, 11), generate_item('Heavenly Chicken', 1, 1, 30)],
                                    base_growth_rate=2,
                                    quotes=["Cluck", "Cluck cluck", "CLUCK", "*stares*", "*flaps wings*"],
+                                   favorite=["Wheat", "Worm"],
                                    img="None",
                                    buy_command="!buypet chicken")]
     return pet_store
 
 
-def generate_pet_info(name: str, description: str, cost: int, yields: list, base_growth_rate: float, quotes: list, img: str, buy_command: str) -> dict:
+def generate_pet_info(name: str, description: str, cost: int, yields: list, base_growth_rate: float, quotes: list, favorite: list, img: str, buy_command: str) -> dict:
     return {
         'name': name,
         'description': description,
@@ -548,6 +554,7 @@ def generate_pet_info(name: str, description: str, cost: int, yields: list, base
         'yields': yields,
         'base_growth_rate': base_growth_rate,
         'quotes': quotes,
+        'favorite': favorite,
         'img': img,
         'buy_command': buy_command
     }
@@ -557,8 +564,8 @@ def create_pet_instance(pet_info: dict, name: str, stats: dict):
     return {
         'pet_info': pet_info,
         'name': name,
-        'hunger': 0,
-        'happiness': 50,
+        'hunger': 100,
+        'happiness': 70,
         'growth_stage': 1,
         'growth_percent': 0,
         'stats': stats
