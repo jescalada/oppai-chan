@@ -124,7 +124,7 @@ async def on_message(msg):
         await play_with_pet(msg)
     elif re.search("^!recipes", msg.content):
         await check_recipes(msg)
-    elif re.search("^!cook", msg.content):
+    elif re.search("^!make", msg.content):
         await cook_item(msg)
 
 
@@ -284,7 +284,7 @@ async def pets_status(msg):
         response += f"{pet['name']} the {pet['pet_info']['name']} - " \
                     f"Hunger: {pet_hunger_text(pet)} - " \
                     f"Mood: {pet_mood_text(pet)} - " \
-                    f"Growth: {'Baby' if pet['growth_stage'] == 0 else 'Child' if pet['growth_stage'] else 'Adult'} [{pet['growth_percent']}%]\n"
+                    f"Growth: {'Baby' if pet['growth_stage'] == 1 else 'Child' if pet['growth_stage'] == 2 else 'Adult'} [{pet['growth_percent']}%]\n"
     await msg.channel.send(response)
 
 
@@ -649,6 +649,8 @@ async def cook_item(msg):
     recipe_info = get_recipe(recipe_name)
     if not recipe_info:
         response = f"You can't make a {recipe_name}, Master!"
+        await msg.channel.send(response)
+        return
     quantities = []
     ingredient_names = []
     for i in range(2, len(args), 2):
@@ -666,7 +668,7 @@ async def cook_item(msg):
             await msg.channel.send(response)
             return
         elif player['items'][item_name] < quantity:
-            response += f"You only have {player['items'][item_name]} {item_name}s to sell, Master!"
+            response += f"You only have {player['items'][item_name]} {item_name}s, Master!"
             await msg.channel.send(response)
             return
         else:
@@ -702,8 +704,9 @@ async def cook_item(msg):
 
 def get_recipe(recipe_name: str) -> dict:
     recipes = load_recipes()
+    recipe_name_fixed = recipe_name.replace("-", " ")
     for recipe in recipes:
-        if recipe['outcome_name'] == recipe_name:
+        if recipe['outcome_name'] == recipe_name_fixed:
             return recipe
     return {}
 
@@ -727,9 +730,25 @@ def load_recipes():
                                   generate_item('Stinky Cheese', 1, 2, 6),
                                   generate_item('Cheese', 1, 3, 11), generate_item('Yummy Cheese', 1, 4, 22),
                                   generate_item('Delicious Cheese', 1, 5, 50),
-                                  generate_item('Heavenly Cheese', 1, 1, 125)],
+                                  generate_item('Heavenly Cheese', 1, 6, 140)],
                         outcome_name="Cheese",
-                        cook_command="!make Cheese")
+                        cook_command="!make Cheese"),
+        generate_recipe(ingredients=[("Code", 100)],
+                        outcomes=[generate_item('Shitty Script', 1, 1, 10),
+                                  generate_item('Bad Script', 1, 2, 50),
+                                  generate_item('Script', 1, 3, 170), generate_item('Hacker Script', 1, 4, 440),
+                                  generate_item('Amazing Script', 1, 5, 850),
+                                  generate_item('Legendary Script', 1, 1, 2250)],
+                        outcome_name="Script",
+                        cook_command="!make Script"),
+        generate_recipe(ingredients=[("Carrot", 5), ("Flour", 3), ("Sugar", 2), ("Egg", 2)],
+                        outcomes=[generate_item('Dangerous Carrot Cake', 1, 1, 10),
+                                  generate_item('Gooey Carrot Cake', 1, 2, 30),
+                                  generate_item('Carrot Cake', 1, 3, 70), generate_item('Fluffy Carrot Cake', 1, 4, 200),
+                                  generate_item('Delicious Carrot Cake', 1, 5, 390),
+                                  generate_item('Heavenly Carrot Cake', 1, 1, 840)],
+                        outcome_name="Carrot Cake",
+                        cook_command="!make Carrot-Cake")
     ]
     return recipes
 
